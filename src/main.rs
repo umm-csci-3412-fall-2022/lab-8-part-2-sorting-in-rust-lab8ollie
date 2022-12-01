@@ -6,7 +6,7 @@ fn main() {
     // between the different algorithms. Since insertion sort is O(N^2)
     // and the other two are O(N log N), you should definitely be able
     // to see a difference between it and the two faster algorithms.
-    let size = 1000; // 100000;
+    let size = 10; // 100000;
     let v = generate_random_array(size, 0, size);
 
     let mut u = v.clone();
@@ -25,7 +25,7 @@ fn main() {
     let merged_v = merge_sort(&v);
     println!("Elapsed time for merge sort was {:?}.", before_merged.elapsed());
     // println!("{:?}", v);
-    // println!("{:?}", merged_v);
+    println!("{:?}", merged_v);
     println!("Is the original, random list in order?: {:?}", is_sorted(&v));
     println!("Was insertion sort in order?: {:?}", is_sorted(&u));
     println!("Was quicksort in order?: {:?}", is_sorted(&w));
@@ -72,6 +72,7 @@ fn insertion_sort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
     // is O(N^2).
 }
 
+
 // Quicksort sort is also "in place", so we modify the input array v
 // directly and do _not_ return anything. The elements of the
 // array need to traits `PartialOrd` (so they support < and ≤).
@@ -82,7 +83,7 @@ fn insertion_sort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
 //
 // Note that the parameter v *has* to be mutable because we're 
 // modifying it in place.
-fn quicksort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
+fn quicksort<T: PartialOrd + std::marker::Copy + std::fmt::Debug>(v: &mut [T]) {
     // Quicksort is a recursive solution where we select a pivot
     // value (usually just the first element) and split (in place)
     // the array into two sections: The "front" is all < the pivot,
@@ -105,17 +106,40 @@ fn quicksort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
     }
 
     // Now choose a pivot and do the organizing.
-    
+    let p = findPivot(v);
     // ...
 
-    let smaller = 0; // Totally wrong – you should fix this.
 
     // Sort all the items < pivot
-    quicksort(&mut v[0..smaller]);
+    quicksort(&mut v[0..p]);
     // Sort all the items ≥ pivot, *not* including the
     // pivot value itself. If we don't include the +1
     // here you can end up in infinite recursions.
-    quicksort(&mut v[smaller+1..length]);
+    quicksort(&mut v[p+1 ..length]);
+}
+
+fn findPivot<T: PartialOrd + std::marker::Copy + std::fmt::Debug>(v: &mut [T]) -> usize {
+    let length = v.len();
+    let pivot = v[0];
+    let mut i = 0;
+    let mut j = length - 1;
+    println!("i: {:?} j: {:?} ", i, j);
+    loop {
+        while v[i] < pivot {
+            i += 1;
+        }
+        while v[j] > pivot {
+            j -= 1;
+        }
+        if i >= j {
+            return j;
+        }
+        if v[i] == v[j] {
+            i += 1;
+        } else {
+            v.swap(i, j);
+        }
+    }
 }
 
 // Merge sort can't be done "in place", so it needs to return a _new_
@@ -184,7 +208,28 @@ fn merge<T: PartialOrd + std::marker::Copy + std::fmt::Debug>(xs: Vec<T>, ys: Ve
 
     // This is totally wrong and will not sort. You should replace it
     // with something useful. :)
-    xs
+    let mut result = Vec::<T>::new();
+    let mut xi = 0;
+    let mut yi = 0;
+    while(xi < xs.len() && yi < ys.len()){
+        if (xs[xi] < ys[yi]){
+            result.push(xs[xi]);
+            xi += 1;
+        }
+        else{
+            result.push(ys[yi]);
+            yi += 1;
+        }
+    }
+    while(xi < xs.len()){
+        result.push(xs[xi]);
+        xi += 1;
+    }
+    while(yi < ys.len()){
+        result.push(ys[yi]);
+        yi += 1;
+    }
+    result
 }
 
 fn is_sorted<T: PartialOrd>(slice: &[T]) -> bool {
